@@ -278,8 +278,8 @@ namespace BSDownload
             Process recognizer = new Process();
             recognizer.StartInfo = new ProcessStartInfo()
             {
-                FileName = "python.exe",
-                Arguments = "BypassGoogle\\speech.py BypassGoogle\\audio.wav",
+                FileName = "BypassGoogle\\speech.exe",
+                Arguments = "BypassGoogle\\audio.wav",
                 CreateNoWindow = true,
                 UseShellExecute = false,
                 RedirectStandardOutput = true
