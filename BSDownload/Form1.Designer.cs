@@ -65,13 +65,14 @@
             // webBrowser1
             // 
             this.webBrowser1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.webBrowser1.FrameEventsPropagateToMainWindow = false;
             this.webBrowser1.Location = new System.Drawing.Point(0, 0);
             this.webBrowser1.MinimumSize = new System.Drawing.Size(20, 20);
             this.webBrowser1.Name = "webBrowser1";
             this.webBrowser1.Size = new System.Drawing.Size(763, 604);
             this.webBrowser1.TabIndex = 0;
+            this.webBrowser1.UseHttpActivityObserver = false;
             this.webBrowser1.Visible = false;
-            this.webBrowser1.DocumentCompleted += WebBrowser1_DocumentCompleted;
             // 
             // MenueGB
             // 
@@ -235,12 +236,11 @@
             // 
             // MaxSimDownloadsTB
             // 
-            this.MaxSimDownloadsTB.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::BSDownload.Properties.Settings.Default, "MaxSimDownloads", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.MaxSimDownloadsTB.Location = new System.Drawing.Point(40, 130);
             this.MaxSimDownloadsTB.Name = "MaxSimDownloadsTB";
             this.MaxSimDownloadsTB.Size = new System.Drawing.Size(247, 20);
             this.MaxSimDownloadsTB.TabIndex = 4;
-            this.MaxSimDownloadsTB.Text = global::BSDownload.Properties.Settings.Default.MaxSimDownloads;
+            this.MaxSimDownloadsTB.Text = "0";
             // 
             // label1
             // 
@@ -264,13 +264,11 @@
             // 
             // DownloadFolderTB
             // 
-            this.DownloadFolderTB.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::BSDownload.Properties.Settings.Default, "Path", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.DownloadFolderTB.Location = new System.Drawing.Point(40, 49);
             this.DownloadFolderTB.Name = "DownloadFolderTB";
             this.DownloadFolderTB.Size = new System.Drawing.Size(247, 20);
             this.DownloadFolderTB.TabIndex = 1;
             this.DownloadFolderTB.TabStop = false;
-            this.DownloadFolderTB.Text = global::BSDownload.Properties.Settings.Default.Path;
             // 
             // DowloadpathLabel
             // 
@@ -334,12 +332,12 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(763, 604);
             this.Controls.Add(this.DownloadPanel);
-            this.Controls.Add(this.SettingPanel);
             this.Controls.Add(this.DownloadingPanel);
             this.Controls.Add(this.EpisodenPanel);
             this.Controls.Add(this.StaffelPanel);
             this.Controls.Add(this.MenueGB);
             this.Controls.Add(this.webBrowser1);
+            this.Controls.Add(this.SettingPanel);
             this.Name = "Form1";
             this.Text = "BSDownload";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);

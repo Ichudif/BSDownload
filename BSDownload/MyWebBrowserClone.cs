@@ -18,31 +18,53 @@ namespace BSDownload
         public static void Load(string Url)
         {
             thsi.Invoke((MethodInvoker)(() => thsi.Navigate(Url)));//, null, null, "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0"
+            System.Threading.Thread.Sleep(1000);
         }
 
         public static string GetDocument()
         {
-            string outp = "";
+            //string outp = "";
+            //try
+            //{
+            //    thsi.Invoke((MethodInvoker)delegate ()
+            //    {
+            //        while (!File.Exists(Path.Combine(Application.StartupPath, "doc.html")))
+            //        {
+            //            thsi.SaveDocument(Path.Combine(Application.StartupPath, "doc.html"));
+            //        }
+            //    });
+
+            //    outp = File.ReadAllText(Path.Combine(Application.StartupPath, "doc.html"));
+            //    File.Delete(Path.Combine(Application.StartupPath, "doc.html"));
+
+            //    if (outp == null || outp == "")
+            //    {
+            //        return GetDocument();
+            //    }
+            //}
+            //catch { }
+
+            //while (outp == "") ;
+
+            string returnme = "";
             try
             {
                 thsi.Invoke((MethodInvoker)delegate ()
                 {
-                    thsi.SaveDocument(Path.Combine(Application.StartupPath, "doc.html"));
+                    using (AutoJSContext context = new AutoJSContext(thsi.Window))
+                    {
+                        context.EvaluateScript("document.getElementsByTagName('html')[0].innerHTML", out returnme);
+                    }
                 });
-
-                outp = File.ReadAllText(Path.Combine(Application.StartupPath, "doc.html"));
-                File.Delete(Path.Combine(Application.StartupPath, "doc.html"));
-
-                if (outp == null || outp == "")
-                {
-                    return GetDocument();
-                }
             }
-            catch { }
+            catch (Exception e)
+            {
+                return "";
+            }
 
-            while (outp == "") ;
+            while (returnme == "" || returnme == null) ;
 
-            return outp;
+            return returnme;
         }
 
         public static void Bringtofront()
@@ -55,7 +77,7 @@ namespace BSDownload
         {
             thsi.Invoke((MethodInvoker)(() => thsi.SendToBack()));
             thsi.Invoke((MethodInvoker)(() => thsi.Visible = false));
-            Load("http://www.bs.to");
+            Load("");
         }
     }
 }

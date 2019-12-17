@@ -20,20 +20,25 @@ namespace BSDownload
         Management MyManager = new Management();
         List<Serie> SerienListe;
         string selectedPanel = "";
-        Thread MaintainTH;
+        Task MaintainTH;
+        bool cancel = false;
 
         public Form1()
         {
             InitializeComponent();
             Xpcom.Initialize("firefox");
 
+            Settings.Default.DownloadLinks = new System.Collections.Specialized.StringCollection();
+
             if (Settings.Default.Path == "")
             {
                 Settings.Default.Path = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders", "{374DE290-123F-4565-9164-39C4925E467B}", String.Empty).ToString() + "\\BSDownload";
             }
-            
-            MaintainTH = new Thread(Maintain);
-            MaintainTH.Start();
+
+            DownloadFolderTB.Text = Settings.Default.Path;
+            MaxSimDownloadsTB.Text = Settings.Default.MaxSimDownloads;
+
+            MaintainTH = Task.Factory.StartNew(Maintain);
         }
         #endregion
 
@@ -267,21 +272,32 @@ namespace BSDownload
         {
             new Thread(() =>
             {
+                if (Settings.Default.AutoSolve)
+                {
+                    MessageBox.Show("Please dont move your mouse and keep this window in the foreground\nStarting Autosolver ...");
+                }
+
                 foreach (FolgenItem item in EpisodenPanel.Controls.Find("FolgenItem", true))
                 {
                     if (item.Checked())
                     {
-                        item.ThisFolge = MyManager.getDownloadLinks(item.ThisFolge, selectedStaffel);
+                        item.ThisFolge = MyManager.getDownloadLinks(item.ThisFolge);
 
                         Download(item.ThisFolge, selectedStaffel, SelectedSerie.SerienName);
                     }
                 }
+
+                Settings.Default.DownloadLinks = new System.Collections.Specialized.StringCollection();
             }).Start();
         }
 
         public void Download(Folge folgetodownload, int selectedstaffel, string SerienName)
         {
-            while (int.Parse(Settings.Default.MaxSimDownloads) != 0 && int.Parse(Settings.Default.MaxSimDownloads) > Form1.ActiveForm.Controls.Find("DownloadingPanel", true)[0].Controls.Count) ;
+            if(int.Parse(Settings.Default.MaxSimDownloads) != 0)
+            {
+                while (int.Parse(Settings.Default.MaxSimDownloads) <= Form1.ActiveForm.Controls.Find("DownloadingPanel", true)[0].Controls.Count) ;
+            }
+
             if (folgetodownload.Downloading)
             {
                 DownloadItem di = new DownloadItem(folgetodownload, selectedstaffel, SerienName);
@@ -302,7 +318,7 @@ namespace BSDownload
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            MaintainTH.Abort();
+            cancel = true;
         }
 
         private void DownloadingPanel_ControlRemoved(object sender, ControlEventArgs e)
@@ -324,6 +340,9 @@ namespace BSDownload
             while (true)
             {
                 Thread.Sleep(1000);
+
+                if (cancel)
+                    return;
 
                 if (selectedPanel == "EpisodenPanel")
                     button1.Invoke((MethodInvoker)(() => button1.Visible = true));

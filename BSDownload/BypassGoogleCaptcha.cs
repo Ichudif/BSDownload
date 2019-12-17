@@ -54,7 +54,7 @@ namespace BSDownload
             Thread.Sleep(rnd.Next(300, 600));
             mouse_event(MOUSEEVENTF_LEFTUP, p.X, p.Y, 0, 0);
 
-            MoveMouseToPosition(old);
+            //MoveMouseToPosition(old);
         }
 
         private void MoveMouseToPosition(Point Pos)
@@ -96,18 +96,6 @@ namespace BSDownload
             web.CreateWindow += CloseWindow;
             new Thread(() =>
             {
-                web.Invoke((MethodInvoker)delegate ()
-                {
-                    web.Window.ScrollTo(0, web.Document.Body.ClientHeight);
-
-                    clickpoint = web.PointToScreen(Point.Empty);
-                    clickpoint.X += web.ClientSize.Width / 4 + rnd.Next(0, web.ClientSize.Width / 2);
-                    clickpoint.Y += web.ClientSize.Height / 4 + rnd.Next(0, web.ClientSize.Height / 3);
-                });
-                LeftMouseClick(clickpoint);
-
-                Thread.Sleep(200);
-
                 string Url = "";
                 web.Invoke((MethodInvoker)delegate ()
                 {
@@ -119,15 +107,17 @@ namespace BSDownload
 
                 while (Url == "") ;
 
-                if (!Url.Contains("bs.to"))
-                {
-                    web.Navigate(Link);
-                    web.DocumentCompleted += CaptchaSiteBack;
-                }
-                else
-                {
-                    ready = true;
-                }
+                //if (!Url.Contains("bs.to"))
+                //{
+                //    web.Navigate(Link);
+                //    web.DocumentCompleted += CaptchaSiteBack;
+                //}
+                //else
+                //{
+                //    ready = true;
+                //}
+
+                ready = true;
 
                 while (!ready) ;
 
@@ -305,11 +295,18 @@ namespace BSDownload
         private Point FindPicture(string pictolookfor)
         {
             var img = new Bitmap(MainFrm.ClientSize.Width, MainFrm.ClientSize.Height);
-            MainFrm.Invoke((MethodInvoker)delegate ()
+            try
             {
-                Graphics g = Graphics.FromImage(img);
-                g.CopyFromScreen(MainFrm.PointToScreen(Point.Empty), new Point(0, 0), MainFrm.ClientSize);
-            });
+                MainFrm.Invoke((MethodInvoker)delegate ()
+                {
+                    Graphics g = Graphics.FromImage(img);
+                    g.CopyFromScreen(MainFrm.PointToScreen(Point.Empty), new Point(0, 0), MainFrm.ClientSize);
+                });
+            }
+            catch (Exception e)
+            {
+                return Point.Empty;
+            }
 
             System.Drawing.Bitmap template = (Bitmap)Bitmap.FromFile(pictolookfor);
 
@@ -340,10 +337,17 @@ namespace BSDownload
             img.UnlockBits(data);
 
             Point MainformPointtoscreen = Point.Empty;
-            MainFrm.Invoke((MethodInvoker)delegate ()
+            try
             {
-                MainformPointtoscreen = MainFrm.PointToScreen(Point.Empty);
-            });
+                MainFrm.Invoke((MethodInvoker)delegate ()
+                {
+                    MainformPointtoscreen = MainFrm.PointToScreen(Point.Empty);
+                });
+            }
+            catch (Exception e)
+            {
+                return Point.Empty;
+            }
 
             while (MainformPointtoscreen.IsEmpty) ;
 

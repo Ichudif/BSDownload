@@ -76,6 +76,7 @@
     <Compile Include="DownloadItem.Designer.cs">
       <DependentUpon>DownloadItem.cs</DependentUpon>
     </Compile>
+    <Compile Include="LinkExtractors\DynamicExtractor.cs" />
     <Compile Include="EpisodenItem.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -94,6 +95,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="LinkExtractors\Extractor.cs" />
     <Compile Include="Management.cs" />
     <Compile Include="MyWebBrowserClone.cs" />
     <Compile Include="Program.cs" />
@@ -105,6 +107,8 @@
     <Compile Include="StaffelItem.Designer.cs">
       <DependentUpon>StaffelItem.cs</DependentUpon>
     </Compile>
+    <Compile Include="LinkExtractors\VeryStreamExtractor.cs" />
+    <Compile Include="LinkExtractors\VivoExtractor.cs" />
     <EmbeddedResource Include="DownloadItem.resx">
       <DependentUpon>DownloadItem.cs</DependentUpon>
     </EmbeddedResource>

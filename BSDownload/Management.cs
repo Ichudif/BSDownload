@@ -19,7 +19,7 @@ namespace BSDownload
         public List<Serie> loadSeries()
         {
             List<Serie> SerienListe = new List<Serie>();
-            string sitemap_bsto = new WebClient().DownloadString("http://www.bs.to/sitemap.xml");
+            string sitemap_bsto = new WebClient().DownloadString("http://www.burningseries.co/sitemap.xml");
 
             XmlDocument sitemap = new XmlDocument();
             sitemap.LoadXml(sitemap_bsto);
@@ -40,7 +40,7 @@ namespace BSDownload
 
         public Serie LoadStaffel(Serie Name)
         {
-            string serien_site = new WebClient().DownloadString("http://www.bs.to/serie/" + Name.SerienName + "/");
+            string serien_site = new WebClient().DownloadString("http://www.burningseries.co/serie/" + Name.SerienName + "/");
             if (serien_site.Contains("Serie nicht gefunden!"))
             {
                 return null;
@@ -54,7 +54,7 @@ namespace BSDownload
 
             Name.Genres = GenreList;
             Name.Description = serien_site.Split(new[] { "<p>" }, StringSplitOptions.None)[1].Split(new[] { "</p>" }, StringSplitOptions.None)[0].Replace("&quot;", "");
-            Name.ImageLink = new Uri("http://www.bs.to/public/images/cover/" + serien_site.Split(new[] { "/public/images/cover/" }, StringSplitOptions.None)[1].Split('\"')[0]);
+            Name.ImageLink = new Uri("http://www.burningseries.co/public/images/cover/" + serien_site.Split(new[] { "/public/images/cover/" }, StringSplitOptions.None)[1].Split('\"')[0]);
 
             Name.Staffeln = new List<Staffel>();
 
@@ -73,11 +73,11 @@ namespace BSDownload
             return Name;
         }
 
-        string[] PossibleHoster = new string[] { "vivo", "Streamango", "FlashX", "OpenLoadHD", "theVideo", "vidto" };
+        string[] PossibleHoster = new string[] { "vivo", "VeryStream", "OpenLoadHD", "FlashX", "theVideo", "vidto" };
 
         public Serie LoadFolgen(Serie Name, int Staffel)
         {
-            string StaffelSite = new WebClient().DownloadString("http://www.bs.to/serie/" + Name.SerienName + "/" + Staffel + "/de");
+            string StaffelSite = new WebClient().DownloadString("http://www.burningseries.co/serie/" + Name.SerienName + "/" + Staffel + "/de");
 
             Name.Staffeln.Find(x => x.StaffelName == "Staffel " + Staffel).Folgen = new List<Folge>();
 
@@ -96,7 +96,7 @@ namespace BSDownload
                         }
                     }
 
-                    Name.Staffeln.Find(x => x.StaffelName == "Staffel " + Staffel).Folgen.Add(new Folge(EpisodenName, hoster, "http://www.bs.to/serie/" + Name.SerienName + "/" + Staffel + "/" + EpisodenName + "/", false, false));
+                    Name.Staffeln.Find(x => x.StaffelName == "Staffel " + Staffel).Folgen.Add(new Folge(EpisodenName, hoster, "http://www.burningseries.co/serie/" + Name.SerienName + "/" + Staffel + "/" + EpisodenName + "/", false, false));
                 }
                 else { break; }
             }
@@ -104,18 +104,54 @@ namespace BSDownload
             return Name;
         }
 
-        public Folge getDownloadLinks(Folge SelectedFolge, int SelectedStaffel)
+        public Folge getDownloadLinks(Folge SelectedFolge)
         {
-            if (Settings.Default.AutoSolve)
-            {
-                MessageBox.Show("Please dont move your mouse and keep this window in the foreground\nStarting Autosolver ...");
-            }
-
             foreach (KeyValuePair<string, string> host in SelectedFolge.HosterandLink)
             {
                 MyWebBrowserClone.Load(SelectedFolge.FolgenURL + host.Key);
+                while (MyWebBrowserClone.thsi.IsBusy) ;
+
                 MyWebBrowserClone.DocumentText = "";
-                while (MyWebBrowserClone.DocumentText == "") ;
+                while (MyWebBrowserClone.GetDocument() == "") ;
+
+                string help2 = "";
+                MyWebBrowserClone.thsi.Invoke((MethodInvoker)delegate ()
+                {
+                    using (AutoJSContext context = new AutoJSContext(MyWebBrowserClone.thsi.Window))
+                    {
+                        context.EvaluateScript(@"if (true) {
+
+    s = '6LeiZSYUAAAAAI3JZXrRnrsBzAdrZ40PmD57v_fs'
+    var t2 = $('section.serie .hoster-player').data('lid');
+                        document.getElementsByTagName('body')[0].innerHTML = '<div id=""challenge""></div>';
+                        function t(e)
+                        {
+                            0 < t2 && $.ajax({
+                                url: 'ajax/embed.php',
+			type: 'POST',
+			dataType: 'JSON',
+			data:
+                                {
+                                    LID: t2,
+                ticket: e
+            },
+            success: function(e) {
+                                    document.getElementsByTagName('html')[0].innerHTML = e.link;
+                                },
+            error: function() {
+                                    document.getElementsByTagName('html')[0].innerHTML = 'Failed';
+                                }
+                            })
+
+    }
+            0 < s.length ? (void 0 === series.grendered && (grecaptcha.render('challenge', {
+                sitekey: s,
+        size: 'invisible',
+        callback: t
+            }), series.grendered = !0), grecaptcha.execute())  : t('')
+}", out help2);
+                    }
+                });
 
                 MyWebBrowserClone.Bringtofront();
 
@@ -125,10 +161,36 @@ namespace BSDownload
                     bypass.GetVideoLink();
                 }
 
-                while (!MyWebBrowserClone.GetDocument().Split(new string[] { "hoster-player" },StringSplitOptions.RemoveEmptyEntries)[1].Split(new string[] { "<a" },StringSplitOptions.None)[1].Split(new string[] { "</a>" },StringSplitOptions.None)[0].Contains(host.Key)) Thread.Sleep(1000);
-                MyWebBrowserClone.Sendtoback();
+                string DirectLink = "";
 
-                SelectedFolge.HosterandLink[host.Key] = MyWebBrowserClone.GetDocument().Split(new string[] { "hoster-player" }, StringSplitOptions.RemoveEmptyEntries)[1].Split(new string[] { "<a href=\"" }, StringSplitOptions.None)[1].Split('\"')[0];
+                if (host.Key == "vivo")
+                {
+                    while (!MyWebBrowserClone.GetDocument().Contains("vivo.sx/"))
+                    {
+                        Thread.Sleep(1000);
+                    }
+
+                    DirectLink = "https://vivo.sx/" + MyWebBrowserClone.GetDocument().Split(new string[] { "vivo.sx/" }, StringSplitOptions.RemoveEmptyEntries)[1].Split('<')[0];
+                }
+                else if(host.Key == "VeryStream")
+                {
+                    while (!MyWebBrowserClone.GetDocument().Split(new string[] { "hoster-player" }, StringSplitOptions.RemoveEmptyEntries)[1].Split(new string[] { "</div>" }, StringSplitOptions.None)[0].Contains("iframe"))
+                    {
+                        Thread.Sleep(1000);
+                    }
+
+                    string help = MyWebBrowserClone.GetDocument();
+                    help = help.Split(new string[] { "hoster-player" }, StringSplitOptions.RemoveEmptyEntries)[1].Split(new string[] { "<iframe " }, StringSplitOptions.RemoveEmptyEntries)[1].Split(new string[] { "src=\"" }, StringSplitOptions.RemoveEmptyEntries)[1].Split('\"')[0];
+
+                    
+                    LinkExtractors.VeryStreamExtractor vsd = new LinkExtractors.VeryStreamExtractor();
+                    DirectLink = vsd.GetDirectVideoLink(help);
+                    vsd.Destroy();
+                    vsd = null;
+                }
+
+                MyWebBrowserClone.Sendtoback();
+                SelectedFolge.HosterandLink[host.Key] = DirectLink;
 
                 break;
             }
